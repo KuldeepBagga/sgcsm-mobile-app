@@ -37,7 +37,6 @@ export default function CustomPicker({
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   inputWrapper: {
     marginBottom: 20,
@@ -58,6 +57,8 @@ const styles = StyleSheet.create({
   picker: {
     height: 53,
     width: "100%",
+    color: "#000", // Ensures text is visible (especially on Android)
+    backgroundColor: "#fff", // Ensures background isn’t transparent
   },
   error: {
     color: "red",
