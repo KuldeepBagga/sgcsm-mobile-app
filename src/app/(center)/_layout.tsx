@@ -182,6 +182,22 @@ export default function CenterLayout() {
             ),
           }}
         />
+
+        <Stack.Screen
+          name="profile/profile"
+          options={{
+            headerTitle: "Update Profile",
+            headerTintColor: "#fff",
+            headerStyle: { backgroundColor: "#152d7cff" },
+            headerLeft: () => (
+              <IconButton
+                onPress={() => router.navigate("/(center)/dashboard")}
+                name="arrowleft"
+                color="#fff"
+              />
+            ),
+          }}
+        />
       </Stack>
     </AuthProvider>
   );

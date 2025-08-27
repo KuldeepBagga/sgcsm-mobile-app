@@ -4,7 +4,7 @@ import CustomTextInput from "@/src/component/CustomText";
 import ProtectedRoute from "@/src/component/ProtectedRoute";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
-import { Alert, ScrollView, StyleSheet, View } from "react-native";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function Editstudent() {
@@ -25,7 +25,7 @@ export default function Editstudent() {
   const [error, setError] = useState({});
   const { id } = useLocalSearchParams();
   const [formData, setFormData] = useState(formFields);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const handleSubmit = useCallback(async () => {
     const newErrors = {};
@@ -39,8 +39,6 @@ export default function Editstudent() {
       setError(newErrors);
       return;
     }
-
-    setIsLoading(true);
     setError({});
 
     const form = new FormData();
@@ -75,6 +73,7 @@ export default function Editstudent() {
       try {
         const res = await axiosClient.get(`payment/edit/${id}`);
         if (res.status === 200 && res.data.data) {
+          setIsLoading(false);
           setFormData((prev) => ({
             ...prev,
             ...res.data.data,
@@ -82,11 +81,19 @@ export default function Editstudent() {
         }
       } catch (err) {
         Alert.alert("Something went wrong!");
+        setIsLoading(false);
       }
     };
 
     if (id) fetchPayment();
   }, [id]);
+
+
+ if(isLoading) return(
+   <View style={{paddingVertical:16}}>
+      <ActivityIndicator size="small"/>
+   </View>
+ )
 
   return (
     <ProtectedRoute>

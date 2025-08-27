@@ -15,11 +15,13 @@ import {
 export default function CenterLoginScreen() {
   const router = useRouter();
   const { login, user, loading } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
 
   const [formData, setFormData] = useState({ username: "", password: "" });
   const [error, setError] = useState({});
 
   useEffect(() => {
+    setIsLoading(false);
     if (!loading && user) {
       router.replace("/(center)/dashboard");
     }
@@ -27,13 +29,17 @@ export default function CenterLoginScreen() {
 
   const handleSubmit = async () => {
     setError({});
+    setIsLoading(true);
     const success = await login(formData.username, formData.password);
     if (success) {
       router.replace("/(center)/dashboard");
     } else {
       setError({ username: "Invalid username or password" });
+      setIsLoading(false);
     }
   };
+  
+  if (isLoading) return <ActivityIndicator />;
 
   if (loading || user) return <ActivityIndicator />;
 

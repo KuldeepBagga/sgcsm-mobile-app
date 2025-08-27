@@ -43,7 +43,7 @@ export default function editStudent() {
   const { user } = useAuth();
   const [formData, setFormData] = useState(formFields);
   const [error, setError] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [courseList, setCourseList] = useState();
   const [image, setImage] = useState(null);
 
@@ -137,13 +137,14 @@ export default function editStudent() {
       }
     } finally {
       setIsLoading(false);
-      Alert.alert("Student Succesfully Added");
+      Alert.alert("Student Succesfully Updated");
       router.push("/student/student");
     }
   }, [formData]);
 
   useEffect(() => {
     const fetchStudent = async () => {
+      setIsLoading(true)
       try {
         const res = await axiosClient.get(`student/edit/${id}`);
         if (res.status === 200 && res.data) {
@@ -151,6 +152,7 @@ export default function editStudent() {
             ...prev,
             ...res.data.data,
           }));
+          setIsLoading(false)
         }
       } catch (err) {
         Alert.alert("Something went wrong!");
@@ -175,6 +177,12 @@ export default function editStudent() {
     };
     getCourse();
   }, [id]);
+
+  if(isLoading) return (
+    <View style={{ paddingVertical: 16 }}>
+        <ActivityIndicator size="small" />
+    </View>
+  )
 
   return (
     <ProtectedRoute>
