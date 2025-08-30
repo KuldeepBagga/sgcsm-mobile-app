@@ -158,7 +158,8 @@ const certificate = () => {
          if (err.response.status === 404) {
            Alert.alert("Something went wrong!");
          }
-         Alert.alert(err.response.data.message);
+         //console.log(err.response.data)
+          //Alert.alert(err.response.message);
        } finally {
          setIsDownloading(false);
        }
@@ -217,7 +218,7 @@ const certificate = () => {
         if (err.response.status === 404) {
           Alert.alert("Something went wrong!");
         }
-        Alert.alert(err.response.data.message);
+        //Alert.alert(err.response.message);
       } finally {
         setIsDownloading(false);
       }
