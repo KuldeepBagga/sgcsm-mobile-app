@@ -20,7 +20,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 global.Buffer = global.Buffer || Buffer;
 
 const CertificateCard = React.memo(
-  ({ certificate, onViewMarksheet, downloadDocument }) => (
+  ({ certificate, downloadMarksheet, downloadDocument }) => (
     <View style={styles.card}>
       <View style={styles.info}>
         <Text style={styles.label}>
@@ -40,14 +40,13 @@ const CertificateCard = React.memo(
       <View style={styles.actions}>
         <TouchableOpacity
           onPress={() =>
-            onViewMarksheet(
+            downloadMarksheet(
               certificate.enrollment_no,
               certificate.certificate_no
             )
           }
-          style={styles.editBtn}
-        >
-          <Text style={styles.btnText}>View Marksheet</Text>
+          style={styles.editBtn}>
+          <Text style={styles.btnText}>Download Marksheet</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -58,8 +57,7 @@ const CertificateCard = React.memo(
               certificate.certificate_type
             )
           }
-          style={styles.deleteBtn}
-        >
+          style={styles.deleteBtn}>
           <Text style={[styles.btnText]}>
             Download{" "}
             {certificate.certificate_type.charAt(0).toUpperCase() +
@@ -120,7 +118,51 @@ const certificate = () => {
   );
 
   const handleDownloadMarksheet = useCallback(
-    async (certificate_no, enrollment_no) => {},
+    async (certificate_no, enrollment_no) => {
+       setIsDownloading(true);
+
+       try {
+         const res = await axiosClient.post(
+           "marksheet/download",
+           {
+             certificateNo: certificate_no,
+             enrollmentNo: enrollment_no,
+           },
+           {
+             headers: {
+               "Content-Type": "multipart/form-data",
+               "Content-Disposition": "attachment;filename=download.jpg",
+             },
+             responseType: "arraybuffer",
+           }
+         );
+
+         // 3. Convert binary to base64
+         const base64 = Buffer.from(res.data, "binary").toString("base64");
+
+         // 4. Save base64 image temporarily
+         const fileUri = FileSystem.cacheDirectory + "diploma.jpg";
+         await FileSystem.writeAsStringAsync(fileUri, base64, {
+           encoding: FileSystem.EncodingType.Base64,
+         });
+
+         // 5. Save the file to the device's Gallery
+         const asset = await MediaLibrary.createAssetAsync(fileUri);
+         await MediaLibrary.createAlbumAsync("Diplomas", asset, false);
+         Alert.alert("Success", "Image saved to gallery!");
+       } catch (err) {
+         if (err.response.status === 401) {
+           await logout();
+           router.push("/");
+         }
+         if (err.response.status === 404) {
+           Alert.alert("Something went wrong!");
+         }
+         Alert.alert(err.response.data.message);
+       } finally {
+         setIsDownloading(false);
+       }
+    },
     []
   );
 
@@ -168,14 +210,13 @@ const certificate = () => {
         await MediaLibrary.createAlbumAsync("Diplomas", asset, false);
         Alert.alert("Success", "Image saved to gallery!");
       } catch (err) {
-        console.log(err);
         if (err.response.status === 401) {
           await logout();
           router.push("/");
         }
-        // if (err.response.status === 422) {
-        //   Alert.alert(err.response.message);
-        // }
+        if (err.response.status === 404) {
+          Alert.alert("Something went wrong!");
+        }
         Alert.alert(err.response.data.message);
       } finally {
         setIsDownloading(false);
@@ -310,13 +351,13 @@ const styles = StyleSheet.create({
   editBtn: {
     backgroundColor: "#28a745",
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 5,
     borderRadius: 6,
   },
   deleteBtn: {
     backgroundColor: "#e74c3c",
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 5,
     borderRadius: 6,
   },
   btnText: {
