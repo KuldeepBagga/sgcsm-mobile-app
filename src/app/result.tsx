@@ -1,30 +1,68 @@
 import Button from "@/src/component/Button";
 import CustomTextInput from "@/src/component/CustomText";
+import axios from "axios";
 import { useNavigation } from "expo-router";
-import React, { useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useState } from "react";
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { WebView } from "react-native-webview";
 
 export default function result() {
   const navigation = useNavigation();
+  const [showHtml, setShowHtml] = useState(null);
   const [formData, setFormData] = useState({
-    enrollmentno: "",
+    registation_no: "",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+
   const [error, setError] = useState({});
-  const handleSubmit = () => {
-    alert();
-  };
+
+  const handleSubmit = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const form = new FormData();
+      form.append("registation_no", formData.registation_no);
+      
+      const res = await axios.post(
+        "https://sgcsmindia.org/certificate/marksheet?show=false",
+        form,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      setShowHtml(res.data);
+    } catch (err) {
+      Alert.alert("Result Not found");
+    }finally{
+      setIsLoading(false);
+    }
+  }, [formData]);
+
+  if(isLoading)
+  {
+    return(
+      <View style={{paddingVertical:16}}>
+          <ActivityIndicator size={"small"}/>
+      </View>
+    )
+  }
+
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView
+      edges={["left", "right", "bottom"]}
+      style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
           <Text style={styles.title}>Online Result</Text>
-          <Text style={styles.subtitle}>Enter your enrollment no</Text>
         </View>
 
         <View style={styles.form}>
           <CustomTextInput
             label="Enrollment No"
-            field="enrollmentno"
+            field="registation_no"
             formData={formData}
             setFormData={setFormData}
             error={error}
@@ -35,6 +73,15 @@ export default function result() {
           btnText="Submit"
           onPress={handleSubmit}
         />
+
+        {showHtml && (
+          <View style={{ height: 500, marginTop:20 }}>
+            <WebView
+              originWhitelist={["*"]}
+              source={{ html: showHtml }}
+            />
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
