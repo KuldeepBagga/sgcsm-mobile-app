@@ -1,8 +1,22 @@
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { Stack, useNavigation } from 'expo-router';
-import { Pressable } from 'react-native';
+import AntDesign from "@expo/vector-icons/AntDesign";
+import { Stack, useNavigation, useRouter } from "expo-router";
+import { Pressable } from "react-native";
+
+const IconButton = ({ onPress, name, color = "#fff" }) => (
+  <Pressable
+    onPress={onPress}
+    style={{ paddingHorizontal: 10 }}>
+    <AntDesign
+      name={name}
+      size={24}
+      color={color}
+    />
+  </Pressable>
+);
 
 const examLayout = () => {
+  const router = useRouter();
+  const navigation = useNavigation();
   return (
     <Stack screenOptions={{ animation: "slide_from_bottom" }}>
       <Stack.Screen
@@ -30,8 +44,17 @@ const examLayout = () => {
           },
         }}
       />
+      <Stack.Screen
+        name="examstart"
+        options={{
+          headerTitle: "Start Exam",
+          headerTintColor: "#fff",
+          headerStyle: { backgroundColor: "#152d7cff" },
+          headerLeft: () => <></>, // hides back button
+        }}
+      />
     </Stack>
   );
-}
+};
 
 export default examLayout;

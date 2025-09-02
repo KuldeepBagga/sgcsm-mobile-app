@@ -1,11 +1,11 @@
 import Button from "@/src/component/Button";
 import CustomTextInput from "@/src/component/CustomText";
-import { useNavigation } from "expo-router";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function CenterLoginScreen() {
-  const navigation = useNavigation();
+  const router = useRouter();
   const [formData, setFormData] = useState({
     username: "",
     password: "",
@@ -68,7 +68,12 @@ export default function CenterLoginScreen() {
           <Button
             btnText="Register for exam"
             btnBgColor="#99031d"
-            onPress={() => navigation.goBack()}
+            onPress={() => router.push('/')}
+          />
+          <Button
+            btnText="Start Exam"
+            btnBgColor="#99031d"
+            onPress={() => router.push('/examstart')}
           />
         </View>
       </ScrollView>
