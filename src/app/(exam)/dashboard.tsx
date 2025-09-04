@@ -3,7 +3,7 @@ import Button from "@/src/component/Button";
 import ExamProtectedRoute from "@/src/component/ExamProtectedRoute";
 import { useExamAuth } from "@/src/context/ExamAuthContext";
 import { router } from "expo-router";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -68,6 +68,19 @@ export default function Dashboard() {
     );
   }
 
+  const handleStartExam = useCallback(async () => {
+    console.log(
+      data?.A_EXAM_ID,
+      data?.A_STATUS,
+      data?.R_COMPLETED,
+      data?.R_ENROLLMENT_NO,
+      data?.R_ID,
+      data?.R_IS_ASSIGNED,
+      data?.R_STATUS,
+      data?.A_EXAM_TIME
+    );
+  }, [data]);
+
   if (loading || isLoading) {
     return (
       <View style={{ paddingVertical: 16 }}>
@@ -78,7 +91,10 @@ export default function Dashboard() {
 
   return (
     <ExamProtectedRoute>
-      <SafeAreaView style={{ paddingVertical: 20, paddingHorizontal: 20 }}>
+      <SafeAreaView
+        edges={["left", "right", "bottom"]}
+        style={{ paddingVertical: 20, paddingHorizontal: 20 }}
+      >
         <ScrollView>
           <View style={styles.tableRow2}>
             <Text style={{ fontSize: 16, fontWeight: "bold" }}>
@@ -107,10 +123,7 @@ export default function Dashboard() {
             </View>
           </View>
           <View style={{ paddingVertical: 16 }}>
-            <Button
-              btnText={"START EXAM"}
-              onPress={() => alert()}
-            />
+            <Button btnText={"START EXAM"} onPress={handleStartExam} />
           </View>
         </ScrollView>
       </SafeAreaView>
