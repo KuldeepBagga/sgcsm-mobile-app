@@ -26,7 +26,7 @@ export default function dashboard() {
     const check = async () => {
       if (user.userType !== "franchise") {
         await logout();
-        router.replace("/");
+        router.replace("/(center)/login");
       }
     };
     check();
@@ -37,7 +37,7 @@ export default function dashboard() {
         if (res.status === 200) setCenterData(res.data.data);
       } catch (err) {
         setIsLoading(false);
-        Alert.alert("something went wrong!");
+        Alert.alert("Not a valid user please login");
       } finally {
         setIsLoading(false);
       }

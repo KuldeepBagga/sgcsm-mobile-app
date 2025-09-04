@@ -1,19 +1,50 @@
 import Button from "@/src/component/Button";
 import CustomTextInput from "@/src/component/CustomText";
+import { useExamAuth } from "@/src/context/ExamAuthContext";
+
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function CenterLoginScreen() {
+  const { login, user, logout, loading } = useExamAuth();
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
+
+  const [formData, setFormData] = useState({ username: "", password: "" });
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState({});
-  const handleSubmit = () => {
-    alert();
-  };
+
+  const handleSubmit = useCallback(async () => {
+    setError({});
+    setIsLoading(true);
+    const success = await login(formData.username, formData.password);
+    
+    if (success) {
+      router.replace("/(exam)/dashboard");
+    } else {
+      setError({ username: "Invalid username or password" });
+      setIsLoading(false);
+    }
+  }, [formData]);
+
+  useEffect(() => {
+    setIsLoading(false);
+    if (!loading && user) {
+      router.replace("/(exam)/dashboard");
+    }
+  }, [user]);
+
+  if (isLoading) return <ActivityIndicator />;
+
+  if (loading || user) return <ActivityIndicator />;
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
@@ -68,12 +99,7 @@ export default function CenterLoginScreen() {
           <Button
             btnText="Register for exam"
             btnBgColor="#99031d"
-            onPress={() => router.push('/')}
-          />
-          <Button
-            btnText="Start Exam"
-            btnBgColor="#99031d"
-            onPress={() => router.push('/examstart')}
+            onPress={() => router.push("/")}
           />
         </View>
       </ScrollView>
