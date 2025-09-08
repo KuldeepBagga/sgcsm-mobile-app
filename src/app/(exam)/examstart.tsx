@@ -1,28 +1,65 @@
+import axiosClient from "@/axios";
+import { useExamAuth } from "@/src/context/ExamAuthContext";
+import { useRouter } from "expo-router";
+import * as SecureStore from "expo-secure-store";
 import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
-
-const questions = [
-  {
-    question: "What is the capital of India?",
-    options: ["Mumbai", "Delhi", "Kolkata", "Chennai"],
-    correctAns: "Delhi",
-  },
-  {
-    question: "React Native is based on?",
-    options: ["Flutter", "Swift", "React", "Angular"],
-    correctAns: "React",
-  },
-  {
-    question: "Which is the largest planet?",
-    options: ["Earth", "Mars", "Jupiter", "Saturn"],
-    correctAns: "Jupiter",
-  },
-];
+import {
+  ActivityIndicator,
+  Alert,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function ExamStart() {
+  const router = useRouter();
+  const { user, logout, loading } = useExamAuth();
+  const [timeLeft, setTimeLeft] = useState();
+  const [isLoading, setIsLoading] = useState(true);
   const [currentQ, setCurrentQ] = useState(0);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(7200); // 2 hours in seconds
+  const [questions, setQuestions] = useState([]);
+
+  useEffect(() => {
+    const getExamQuestions = async () => {
+      const userId = user.userId;
+
+      if (!user || !userId || user.userType !== "exam") {
+        //await logout();
+        router.push("/(exam)/login");
+        return null;
+      }
+
+      const timeLeft = await SecureStore.getItemAsync("timeLeft");
+
+      if (timeLeft) {
+        setTimeLeft(Number(timeLeft * 60));
+      } else {
+        Alert.alert("Exam time is over now");
+        router.push("/(exam)/dashboard");
+      }
+
+      try {
+        const res = await axiosClient.get("exam/start");
+        if (res.status === 200) {
+          setQuestions(res.data.data);
+        }
+      } catch (err) {
+        if (err.response.status === 401) {
+          await logout();
+          //router.push("/(exam)/login");
+        }
+        if (err.response.status === 404) {
+          Alert.alert("Exam is not set");
+          router.push("/(exam)/dashboard");
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    getExamQuestions();
+  }, []);
 
   // Global exam timer
   useEffect(() => {
@@ -53,8 +90,38 @@ export default function ExamStart() {
     }
   };
 
-  const finishExam = () => {
-    alert(`Quiz Finished! Your score: ${score}/${questions.length}`);
+  const finishExam = async () => {
+    setIsLoading(true);
+    try {
+      const res = await axiosClient.post(
+        "exam/result",
+        {
+          userId: user.userId,
+          total_questions: questions.length,
+          correct_ans: score,
+        },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+      if (res.status === 200 && res.data.status) {
+        Alert.alert("Success", res.data.message);
+        router.replace("/(exam)/dashboard");
+      }
+    } catch (err) {
+      if (err.response.status === 404) {
+        Alert.alert("Success", "Something went wrong");
+      }
+
+      if (err.response.status === 401) {
+        await logout();
+        //router.push("/(exam)/login");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Format time (HH:MM:SS)
@@ -67,6 +134,14 @@ export default function ExamStart() {
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  if (loading || isLoading) {
+    return (
+      <View style={{ paddingVertical: 16 }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
   return (
     <View style={{ padding: 20 }}>
       <Text style={{ fontSize: 18, marginBottom: 10 }}>
@@ -74,10 +149,10 @@ export default function ExamStart() {
       </Text>
 
       <Text style={{ fontSize: 20, marginBottom: 20 }}>
-        {questions[currentQ].question}
+        {questions[currentQ]?.question}
       </Text>
 
-      {questions[currentQ].options.map((option, idx) => (
+      {questions[currentQ]?.options.map((option, idx) => (
         <TouchableOpacity
           key={idx}
           style={{

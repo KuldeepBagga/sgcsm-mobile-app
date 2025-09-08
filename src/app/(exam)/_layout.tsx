@@ -1,6 +1,6 @@
 import { ExamAuthProvider } from "@/src/context/ExamAuthContext";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import { Stack, useNavigation, useRouter } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { Pressable } from "react-native";
 
 const IconButton = ({ onPress, name, color = "#fff" }) => (
@@ -17,7 +17,7 @@ const IconButton = ({ onPress, name, color = "#fff" }) => (
 
 const examLayout = () => {
   const router = useRouter();
-  const navigation = useNavigation();
+
   return (
     <ExamAuthProvider>
       <Stack screenOptions={{ animation: "slide_from_bottom" }}>
@@ -31,10 +31,9 @@ const examLayout = () => {
             },
             presentation: "modal",
             headerLeft: () => {
-              const navigation = useNavigation();
               return (
                 <Pressable
-                  onPress={() => navigation.goBack()}
+                  onPress={() => router.back()}
                   style={{ paddingHorizontal: 10 }}>
                   <AntDesign
                     name="close"
@@ -62,6 +61,27 @@ const examLayout = () => {
             headerTintColor: "#fff",
             headerStyle: { backgroundColor: "#152d7cff" },
             headerLeft: () => <></>, // hides back button
+          }}
+        />
+        <Stack.Screen
+          name="register"
+          options={{
+            headerTitle: "Online Exam Register",
+            headerTintColor: "#fff",
+            headerStyle: { backgroundColor: "#152d7cff" },
+            headerLeft: () => {
+              return (
+                <Pressable
+                  onPress={() => router.back()}
+                  style={{ paddingHorizontal: 10 }}>
+                  <AntDesign
+                    name="arrowleft"
+                    size={24}
+                    color="#fff"
+                  />
+                </Pressable>
+              );
+            },
           }}
         />
       </Stack>

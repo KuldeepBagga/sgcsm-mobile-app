@@ -25,7 +25,7 @@ export default function CenterLoginScreen() {
     setError({});
     setIsLoading(true);
     const success = await login(formData.username, formData.password);
-    
+
     if (success) {
       router.replace("/(exam)/dashboard");
     } else {
@@ -99,7 +99,7 @@ export default function CenterLoginScreen() {
           <Button
             btnText="Register for exam"
             btnBgColor="#99031d"
-            onPress={() => router.push("/")}
+            onPress={() => router.navigate("/(exam)/register")}
           />
         </View>
       </ScrollView>

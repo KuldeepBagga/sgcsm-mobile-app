@@ -94,7 +94,7 @@ export const ExamAuthProvider = ({ children }) => {
       // Clear user state
       setUser(null);
     } catch (err) {
-      console.error("Logout error:", err);
+      //console.error("Logout error:", err);
     }
   };
 
@@ -105,4 +105,4 @@ export const ExamAuthProvider = ({ children }) => {
   );
 };
 
-export const useExamAuth = () => useContext(ExamAuthContext)
+export const useExamAuth = () => useContext(ExamAuthContext);
