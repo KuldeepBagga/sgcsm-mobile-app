@@ -1,19 +1,59 @@
 import Button from "@/src/component/Button";
 import CustomTextInput from "@/src/component/CustomText";
-import { useNavigation } from "expo-router";
-import React, { useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useStudentAuth } from "@/src/context/StudentAuthContext";
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  ActivityIndicator,
+  Alert,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 export default function StudentLoginScreen() {
-  const navigation = useNavigation();
-  const [formData, setFormData] = useState({
-    username: "",
-    password: "",
-  });
+  const { login, logout, loading, user } = useStudentAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
   const [error, setError] = useState({});
-  const handleSubmit = () => {
-    alert();
-  };
+  const [formData, setFormData] = useState({ username: "", password: "" });
+
+  useEffect(() => {
+    const checkUser = async () => {
+      if (user && user.userType !== "student") {
+        await logout();
+        Alert.alert("Validation Error", "You are not authorized");
+        return;
+      }
+      if (user) {
+        router.replace("/(student)/dashboard");
+      }
+    };
+    checkUser();
+  }, [user, logout, router]);
+
+  const handleSubmit = useCallback(async () => {
+    setError({});
+    setIsLoading(true);
+
+    const success = await login(formData.username, formData.password);
+
+    if (!success) {
+      setError({ general: "Invalid username or password" });
+      setIsLoading(false);
+    }
+  }, [formData, login]);
+
+  if (loading || isLoading) {
+    return (
+      <View style={{ paddingVertical: 16 }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>

@@ -1,32 +1,27 @@
-// src/components/ProtectedRoute.tsx
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { ActivityIndicator, Alert, View } from "react-native";
-import { useExamAuth } from "../context/ExamAuthContext";
+import { useStudentAuth } from "../context/StudentAuthContext";
 
-export default function ExamProtectedRoute({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { user, loading, logout } = useExamAuth();
+const StudentProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading, logout } = useStudentAuth();
   const router = useRouter();
 
   useEffect(() => {
     const check = async () => {
-      if (user.userType !== "exam") {
+      if (user.userType !== "student") {
         await logout();
         Alert.alert("Authrization Error", "Your are not authorized");
-        router.replace("/(exam)/login");
+        router.replace("/(student)/login");
       }
     };
 
     if (!user) {
-      router.replace("/(exam)/login");
+      router.replace("/(student)/login");
     }
 
     if (!loading && !user) {
-      router.replace("/(exam)/login");
+      router.replace("/(student)/login");
     }
 
     check();
@@ -41,4 +36,6 @@ export default function ExamProtectedRoute({
   }
 
   return <>{children}</>;
-}
+};
+
+export default StudentProtectedRoute;

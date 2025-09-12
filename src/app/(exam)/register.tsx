@@ -1,7 +1,10 @@
+import axiosClient from "@/axios";
 import Button from "@/src/component/Button";
 import CustomTextInput from "@/src/component/CustomText";
 import React, { useCallback, useState } from "react";
 import {
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   ScrollView,
   StyleSheet,
@@ -18,13 +21,70 @@ const fields = {
   password: "",
 };
 
+const requiredFields = {
+  studentName: "Student name is required",
+  enrollmentNo: "Enrollment no is requried",
+  course: "Course is requried",
+  userName: "Username is required",
+  password: "password is required",
+};
+
 export default function () {
   const [formData, setFormData] = useState(fields);
   const [error, setError] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = useCallback(async () => {
-    alert();
+    const newErrors = {};
+    for (const [key, message] of Object.entries(requiredFields)) {
+      if (!formData[key]?.trim()) {
+        newErrors[key] = message;
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setError(newErrors);
+      return;
+    }
+
+    setIsLoading(true);
+    setError({});
+
+    const form = new FormData();
+
+    for (const key in formData) {
+      form.append(key, formData[key]);
+    }
+
+    try {
+      const res = await axiosClient.post("exam/register", form, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+      if (res.status === 201) {
+        Alert.alert("Success", "Your registration has been completed!");
+        setFormData(fields);
+      }
+    } catch (err) {
+      if (err.response.status === 422) {
+        setError(err.response.data.error || {});
+      }
+      if (err.response.status === 404) {
+        Alert.alert("Error", "Something went wrong!");
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }, [formData]);
+
+  if (isLoading) {
+    return (
+      <View style={{ paddingVertical: 16 }}>
+        <ActivityIndicator />
+      </View>
+    );
+  }
 
   return (
     <SafeAreaView

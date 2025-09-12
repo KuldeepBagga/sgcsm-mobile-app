@@ -15,7 +15,6 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const loadUser = async () => {
       const token = await SecureStore.getItemAsync("token");
-      setLoading(true);
       if (token) {
         try {
           const res = await axiosClient.get("user/", {
